@@ -1,6 +1,6 @@
 # ApplyWise – Full Stack Recruitment Platform
-# ApplyWise is a full-stack recruitment platform that connects job seekers with employers. Employers can post jobs and manage applicants, while job seekers can explore opportunities, analyze their resumes, and apply intelligently.
-The project demonstrates a modern full-stack architecture with secure authentication, role-based access control, resume uploads, resume-job compatibility analysis, and cloud deployment.
+# ApplyWise is a full-stack recruitment platform that connects job seekers with employers. Employers can post jobs and manage applicants, while job seekers can explore opportunities, analyze their resumes, and apply intelligently. 
+# The project demonstrates a modern full-stack architecture with secure authentication, role-based access control, resume uploads, resume-job compatibility analysis, and cloud deployment.
 ---
 
 ## 🚀 Live Demo
