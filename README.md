@@ -30,6 +30,12 @@ https://hireflow-2sol.onrender.com
 #### Apply Job
 <img src="ScreenShots/ApplyForJob.png" width="800"/>
 
+#### Analyze Resume and Get Insights
+<img src="ScreenShots/AnalyzeResumeandGetInsights.png" width="800"/>
+
+#### Job Insights
+<img src="ScreenShots/JobInsights" width="800"/>
+
 #### Job Seeker Applications
 <img src="ScreenShots/MyApplications.png" width="800"/>
 
