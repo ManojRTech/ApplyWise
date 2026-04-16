@@ -1,10 +1,7 @@
-# HireFlow – Full Stack Recruitment Platform
+# ApplyWise – Full Stack Recruitment Platform
+ApplyWise is a full-stack recruitment platform that connects job seekers with employers. Employers can post jobs and manage applicants, while job seekers can explore opportunities, analyze their resumes, and apply intelligently.
 
-HireFlow is a full-stack recruitment platform that connects **job seekers** with **employers**.
-Employers can post jobs and manage applicants, while job seekers can explore opportunities and apply with their resumes.
-
-The project demonstrates a modern **full-stack architecture** with secure authentication, role-based access control, resume uploads, and cloud deployment.
-
+The project demonstrates a modern full-stack architecture with secure authentication, role-based access control, resume uploads, resume-job compatibility analysis, and cloud deployment.
 ---
 
 ## 🚀 Live Demo
@@ -99,12 +96,21 @@ Job seekers can:
 * View detailed job information
 * Search and filter jobs
 
+### Resume Analysis & Insights
+
+Analyze resume against job description before applying
+Skill match calculation based on required job skills
+Competition level based on number of applicants
+Employer responsiveness tracking
+Success probability estimation for informed decision-making
+
 ### Job Applications
 
 Job seekers can:
 
 * Apply to jobs
 * Upload resume files
+* Analyze resume before applying
 * Track application status
 
 Employers can:
@@ -174,7 +180,6 @@ npm run dev
 ## 📌 Future Improvements
 
 * Email notifications for application updates
-* Resume parsing and skill extraction
 * Job recommendation system
 * Admin dashboard
 * Advanced job search filters
@@ -193,3 +198,6 @@ https://github.com/ManojRTech
 ## ⭐ Support
 
 If you found this project useful, consider giving it a star ⭐ on GitHub.
+
+## About
+ApplyWise – A full-stack job recruitment platform built with Spring Boot, React (Vite), JWT Authentication, and PostgreSQL. Includes resume analysis with skill matching, competition scoring, employer responsiveness, and success prediction to enable smarter job applications.
