@@ -57,20 +57,6 @@ public class ApplicationController {
         );
     }
 
-    // Employer updates status
-    @PutMapping("/{applicationId}/status")
-    @PreAuthorize("hasRole('EMPLOYER')")
-    public ResponseEntity<String> updateStatus(
-            @PathVariable Long applicationId,
-            @RequestParam String status,
-            Authentication authentication
-    ) {
-        String email = authentication.getName();
-        return ResponseEntity.ok(
-                applicationService.updateApplicationStatus(applicationId, status, email)
-        );
-    }
-
     // JobSeeker views own applications
     @GetMapping("/me")
     @PreAuthorize("hasRole('JOB_SEEKER')")

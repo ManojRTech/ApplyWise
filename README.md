@@ -1,5 +1,5 @@
 # ApplyWise – Full Stack Recruitment Platform
-## ApplyWise is a full-stack recruitment platform that connects job seekers with employers. Employers can post jobs and manage applicants, while job seekers can explore opportunities, analyze their resumes, and apply intelligently. The project demonstrates a modern full-stack architecture with secure authentication, role-based access control, resume uploads, resume-job compatibility analysis, and cloud deployment.
+## ApplyWise is a full-stack recruitment platform that connects job seekers with employers. Employers can post jobs and manage applicants, while job seekers can explore opportunities, analyze their resumes, and apply intelligently. The project demonstrates a modern full-stack architecture with secure authentication, role-based access control, resume uploads, resume-job compatibility analysis, email notifications, and cloud deployment.
 ---
 
 ## 🚀 Live Demo
@@ -122,6 +122,14 @@ Employers can:
 * View job applicants
 * Access uploaded resumes
 * Shortlist or reject candidates
+* Trigger email notifications on status updates
+
+### Email Notifications
+
+* Automatic email updates sent to job seekers on application status changes
+* Rejection emails with custom messages
+* Shortlisting emails with optional assessment links
+* Enhances communication between employers and candidates
 
 ### File Upload
 
@@ -136,6 +144,7 @@ Employers can:
 * Spring Security configuration
 * Protected REST endpoints
 * Role-based authorization
+* Secure email communication via backend service
 
 ---
 
@@ -183,7 +192,6 @@ npm run dev
 
 ## 📌 Future Improvements
 
-* Email notifications for application updates
 * Job recommendation system
 * Admin dashboard
 * Advanced job search filters
@@ -204,4 +212,4 @@ https://github.com/ManojRTech
 If you found this project useful, consider giving it a star ⭐ on GitHub.
 
 ## About
-ApplyWise – A full-stack job recruitment platform built with Spring Boot, React (Vite), JWT Authentication, and PostgreSQL. Includes resume analysis with skill matching, competition scoring, employer responsiveness, and success prediction to enable smarter job applications.
+ApplyWise – A full-stack job recruitment platform built with Spring Boot, React (Vite), JWT Authentication, and PostgreSQL. Includes resume analysis, skill matching, competition scoring, employer responsiveness, success prediction, and email notification system for application updates
