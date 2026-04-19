@@ -40,7 +40,7 @@ https://hireflow-2sol.onrender.com
 ### Employer Interface
 
 #### Employer Posted Jobs
-<img src="ScreenShots/MyPostedJobs.png" width="800"/>
+<img src="ScreenShots/MyPostedJob.png" width="800"/>
 
 #### Employer Job Applications
 <img src="ScreenShots/EmployerApplicationsView.png" width="800"/>
