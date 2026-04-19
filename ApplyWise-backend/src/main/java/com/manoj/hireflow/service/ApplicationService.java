@@ -1,0 +1,249 @@
+package com.manoj.hireflow.service;
+
+import com.manoj.hireflow.dto.ApplicationResponse;
+import com.manoj.hireflow.dto.ApplicationSeekerResponse;
+import com.manoj.hireflow.dto.JobInsightDto;
+import com.manoj.hireflow.entity.Application;
+import com.manoj.hireflow.entity.Job;
+import com.manoj.hireflow.entity.User;
+import com.manoj.hireflow.repository.ApplicationRepository;
+import com.manoj.hireflow.repository.JobRepository;
+import com.manoj.hireflow.repository.UserRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+
+@Service
+public class ApplicationService {
+    private final ApplicationRepository applicationRepository;
+    private final JobRepository jobRepository;
+    private final UserRepository userRepository;
+    private final InsightService insightService;
+    private final ResumeParserService resumeParserService;
+    private final SkillMatcherService skillMatcherService;
+    private final EmailService emailService;
+
+    public ApplicationService(ApplicationRepository applicationRepository,
+                              JobRepository jobRepository,
+                              UserRepository userRepository,
+                              InsightService insightService,
+                              ResumeParserService resumeParserService,
+                              SkillMatcherService skillMatcherService,
+                              EmailService emailService) {
+        this.applicationRepository = applicationRepository;
+        this.jobRepository = jobRepository;
+        this.userRepository = userRepository;
+        this.insightService = insightService;
+        this.resumeParserService = resumeParserService;
+        this.skillMatcherService = skillMatcherService;
+        this.emailService = emailService;
+    }
+
+    public String applyToJob(Long jobId, String email, MultipartFile file) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!user.getRole().name().equals("JOB_SEEKER")) {
+            throw new RuntimeException("Only job seekers can apply");
+        }
+
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new RuntimeException("Job not found"));
+
+        if (applicationRepository.existsByUserAndJob(user, job)) {
+            throw new RuntimeException("You already applied to this job");
+        }
+
+        String uploadDir = "uploads/";
+        File directory = new File(uploadDir);
+        if (!directory.exists()) {
+            directory.mkdir();
+        }
+
+        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        Path filePath = Paths.get(uploadDir + fileName);
+
+        try {
+            Files.write(filePath, file.getBytes());
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to upload resume");
+        }
+
+        Application application = new Application();
+        application.setUser(user);
+        application.setJob(job);
+        application.setResumeUrl(fileName);
+        application.setStatus(Application.ApplicationStatus.PENDING);
+        application.setStatusMessage("Your application is under review.");
+
+        applicationRepository.save(application);
+
+        return "Application submitted successfully";
+    }
+
+    public List<ApplicationResponse> getApplicationsForJob(Long jobId, String email) {
+
+        User employer = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new RuntimeException("Job not found"));
+
+        // Ownership validation
+        if (!job.getEmployer().getId().equals(employer.getId())) {
+            throw new RuntimeException("You are not allowed to view applications for this job");
+        }
+
+        List<Application> applications = applicationRepository.findByJob(job);
+
+        return applications.stream()
+                .map(this::convertToResponse)
+                .toList();
+    }
+    private ApplicationResponse convertToResponse(Application application) {
+
+        ApplicationResponse response = new ApplicationResponse();
+
+        response.setApplicationId(application.getId());
+        response.setApplicantName(application.getUser().getName());
+        response.setApplicantEmail(application.getUser().getEmail());
+        response.setStatus(application.getStatus().name());
+        response.setAppliedAt(application.getAppliedAt());
+        response.setResumeUrl(application.getResumeUrl());
+        response.setStatusMessage(application.getStatusMessage());
+
+        return response;
+    }
+
+    public void updateApplicationStatus(Long applicationId,
+                                        String status,
+                                        String employerEmail,
+                                        String assessmentLink,
+                                        String customMessage){
+
+        User employer = userRepository.findByEmail(employerEmail)
+                .orElseThrow(() -> new RuntimeException("Employer not found"));
+
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new RuntimeException("Application not found"));
+
+        Job job = application.getJob();
+
+        if (!job.getEmployer().getId().equals(employer.getId())) {
+            throw new RuntimeException("Unauthorized");
+        }
+
+        application.setStatus(Application.ApplicationStatus.valueOf(status));
+
+        String backendMessage = "";
+
+        switch (application.getStatus()) {
+            case SHORTLISTED ->
+                    backendMessage = "Congratulations! Your profile has been shortlisted for the next stage. Further communication regarding the upcoming process will be shared with you via email.";
+            case REJECTED ->
+                    backendMessage = "Thank you for your interest in this opportunity. After careful consideration, we will not be moving forward with your application at this time.";
+            case PENDING ->
+                    backendMessage = "Your application is under review.";
+        }
+
+        application.setStatusMessage(backendMessage);
+        application.setAssessmentLink(assessmentLink);
+
+        applicationRepository.save(application);
+
+        //Send email to jobseeker
+        String to = application.getUser().getEmail();
+
+        String emailMessage =
+                (customMessage != null && !customMessage.isEmpty())
+                        ? customMessage
+                        : backendMessage; // fallback
+
+        String body = "Hello " + application.getUser().getName() + ",\n\n"
+                + emailMessage + "\n\n"
+                + (assessmentLink != null && !assessmentLink.isEmpty()
+                ? "Next Step (Assessment): " + assessmentLink + "\n\n"
+                : "")
+                + "Employer: " + employer.getName() + "\n"
+                + "Contact: " + employer.getEmail() + "\n"
+                + "Company: " + job.getCompany();
+
+        emailService.sendEmail(to, "Application Update", body);
+    }
+
+    public List<ApplicationSeekerResponse> getMyApplications(String email) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<Application> applications =
+                applicationRepository.findByUserId(user.getId());
+
+        return applications.stream()
+                .map(this::convertToSeekerResponse)
+                .toList();
+    }
+    private ApplicationSeekerResponse convertToSeekerResponse(Application application) {
+
+        ApplicationSeekerResponse response = new ApplicationSeekerResponse();
+
+        response.setApplicationId(application.getId());
+        response.setJobTitle(application.getJob().getTitle());
+        response.setEmployerName(application.getJob().getEmployer().getName());
+        response.setStatus(application.getStatus().name());
+        response.setAppliedAt(application.getAppliedAt());
+        response.setStatusMessage(application.getStatusMessage());
+
+        return response;
+    }
+
+    public String cancelApplication(Long applicationId, String email) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new RuntimeException("Application not found"));
+
+        if (!application.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Not authorized");
+        }
+
+        applicationRepository.delete(application);
+
+        return "Application cancelled successfully";
+    }
+
+    public JobInsightDto generateInsightsFromResume(Long jobId, MultipartFile file) {
+
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new RuntimeException("Job not found"));
+
+        // extract text directly from uploaded file (NOT from DB)
+        String resumeText = resumeParserService.extractTextFromFile(file);
+
+        double skillMatch = skillMatcherService.calculateSkillMatch(
+                resumeText,
+                job.getDescription()
+        );
+
+        System.out.println("RESUME TEXT:\n" + resumeText);
+        System.out.println("JOB DESC:\n" + job.getDescription());
+
+        int applicantCount = applicationRepository.countByJob(job);
+
+        int total = applicationRepository.countByJob(job);
+        int responded = applicationRepository
+                .countByJobAndStatusNot(job, Application.ApplicationStatus.PENDING);
+        int employerResponse = (total == 0) ? 0 : (responded * 100 / total);
+
+        return insightService.calculateInsights(skillMatch, applicantCount, employerResponse);
+    }
+}
