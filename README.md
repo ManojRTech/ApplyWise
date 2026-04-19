@@ -39,6 +39,9 @@ https://hireflow-2sol.onrender.com
 
 ### Employer Interface
 
+#### Create Job
+<img src="ScreenShots/CreateJob.png" width="800"/>
+
 #### Employer Posted Jobs
 <img src="ScreenShots/MyPostedJob.png" width="800"/>
 
