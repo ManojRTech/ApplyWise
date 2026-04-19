@@ -3,7 +3,11 @@ package com.manoj.hireflow.controller;
 import com.manoj.hireflow.dto.ApplicationResponse;
 import com.manoj.hireflow.dto.ApplicationSeekerResponse;
 import com.manoj.hireflow.dto.JobInsightDto;
+import com.manoj.hireflow.dto.StatusUpdateRequest;
+import com.manoj.hireflow.entity.Application;
+import com.manoj.hireflow.repository.ApplicationRepository;
 import com.manoj.hireflow.service.ApplicationService;
+import com.manoj.hireflow.service.EmailService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -17,9 +21,13 @@ import java.util.List;
 public class ApplicationController {
 
     private final ApplicationService applicationService;
+    private final ApplicationRepository applicationRepository;
+    private final EmailService emailService;
 
-    public ApplicationController(ApplicationService applicationService) {
+    public ApplicationController(ApplicationService applicationService,  ApplicationRepository applicationRepository, EmailService emailService) {
         this.applicationService = applicationService;
+        this.applicationRepository = applicationRepository;
+        this.emailService = emailService;
     }
 
     // JobSeeker applies to job
@@ -97,5 +105,25 @@ public class ApplicationController {
         JobInsightDto dto = applicationService.generateInsightsFromResume(jobId, file);
 
         return ResponseEntity.ok(dto);
+    }
+
+    @PutMapping("/{id}/status")
+    @PreAuthorize("hasRole('EMPLOYER')")
+    public ResponseEntity<?> updateStatus(
+            @PathVariable Long id,
+            @RequestBody StatusUpdateRequest request,
+            Authentication authentication
+    ) {
+        String employerEmail = authentication.getName();
+
+        applicationService.updateApplicationStatus(
+                id,
+                request.getStatus(),
+                employerEmail,
+                request.getAssessmentLink(),
+                request.getMessage()
+        );
+
+        return ResponseEntity.ok("Status updated successfully");
     }
 }

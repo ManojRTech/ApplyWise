@@ -14,10 +14,12 @@ const ProtectedRoute = ({ children, allowedRole }) => {
     }
   };
 
+  // No token
   if (!token) {
     return <Navigate to="/login" replace />;
   }
 
+  // Expired token
   if (isTokenExpired(token)) {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
@@ -25,6 +27,7 @@ const ProtectedRoute = ({ children, allowedRole }) => {
     return <Navigate to="/login" replace />;
   }
 
+  // Role mismatch
   if (allowedRole && role !== allowedRole) {
     return <Navigate to="/jobs" replace />;
   }

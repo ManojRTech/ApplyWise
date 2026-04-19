@@ -27,19 +27,22 @@ public class ApplicationService {
     private final InsightService insightService;
     private final ResumeParserService resumeParserService;
     private final SkillMatcherService skillMatcherService;
+    private final EmailService emailService;
 
     public ApplicationService(ApplicationRepository applicationRepository,
                               JobRepository jobRepository,
                               UserRepository userRepository,
                               InsightService insightService,
                               ResumeParserService resumeParserService,
-                              SkillMatcherService skillMatcherService) {
+                              SkillMatcherService skillMatcherService,
+                              EmailService emailService) {
         this.applicationRepository = applicationRepository;
         this.jobRepository = jobRepository;
         this.userRepository = userRepository;
         this.insightService = insightService;
         this.resumeParserService = resumeParserService;
         this.skillMatcherService = skillMatcherService;
+        this.emailService = emailService;
     }
 
     public String applyToJob(Long jobId, String email, MultipartFile file) {
@@ -119,12 +122,14 @@ public class ApplicationService {
         return response;
     }
 
-    public String updateApplicationStatus(Long applicationId,
-                                          String newStatus,
-                                          String email) {
+    public void updateApplicationStatus(Long applicationId,
+                                        String status,
+                                        String employerEmail,
+                                        String assessmentLink,
+                                        String customMessage){
 
-        User employer = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User employer = userRepository.findByEmail(employerEmail)
+                .orElseThrow(() -> new RuntimeException("Employer not found"));
 
         Application application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new RuntimeException("Application not found"));
@@ -132,26 +137,45 @@ public class ApplicationService {
         Job job = application.getJob();
 
         if (!job.getEmployer().getId().equals(employer.getId())) {
-            throw new RuntimeException("Not authorized");
+            throw new RuntimeException("Unauthorized");
         }
 
-        application.setStatus(Application.ApplicationStatus.valueOf(newStatus));
+        application.setStatus(Application.ApplicationStatus.valueOf(status));
 
-        switch (Application.ApplicationStatus.valueOf(newStatus)) {
+        String backendMessage = "";
+
+        switch (application.getStatus()) {
             case SHORTLISTED ->
-                    application.setStatusMessage(
-                            "Congratulations! Your profile has been shortlisted for the next stage. Further communication regarding the upcoming process will be shared with you via email.");
+                    backendMessage = "Congratulations! Your profile has been shortlisted for the next stage. Further communication regarding the upcoming process will be shared with you via email.";
             case REJECTED ->
-                    application.setStatusMessage(
-                            "Thank you for your interest in this opportunity. After careful consideration, we will not be moving forward with your application at this time.");
+                    backendMessage = "Thank you for your interest in this opportunity. After careful consideration, we will not be moving forward with your application at this time.";
             case PENDING ->
-                    application.setStatusMessage(
-                            "Your application is under review.");
+                    backendMessage = "Your application is under review.";
         }
+
+        application.setStatusMessage(backendMessage);
+        application.setAssessmentLink(assessmentLink);
 
         applicationRepository.save(application);
 
-        return "Application status updated successfully";
+        //Send email to jobseeker
+        String to = application.getUser().getEmail();
+
+        String emailMessage =
+                (customMessage != null && !customMessage.isEmpty())
+                        ? customMessage
+                        : backendMessage; // fallback
+
+        String body = "Hello " + application.getUser().getName() + ",\n\n"
+                + emailMessage + "\n\n"
+                + (assessmentLink != null && !assessmentLink.isEmpty()
+                ? "Next Step (Assessment): " + assessmentLink + "\n\n"
+                : "")
+                + "Employer: " + employer.getName() + "\n"
+                + "Contact: " + employer.getEmail() + "\n"
+                + "Company: " + job.getCompany();
+
+        emailService.sendEmail(to, "Application Update", body);
     }
 
     public List<ApplicationSeekerResponse> getMyApplications(String email) {

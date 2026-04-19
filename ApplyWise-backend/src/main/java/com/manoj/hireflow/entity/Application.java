@@ -39,4 +39,7 @@ public class Application {
     }
 
     private String statusMessage;
+
+    @Column
+    private String assessmentLink;
 }
