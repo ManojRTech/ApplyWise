@@ -158,7 +158,7 @@ public class ApplicationService {
 
         applicationRepository.save(application);
 
-        // ✅ Send email to jobseeker
+        //Send email to jobseeker
         String to = application.getUser().getEmail();
 
         String emailMessage =

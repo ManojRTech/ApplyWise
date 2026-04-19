@@ -45,7 +45,7 @@ function EmployerApplications() {
             <p><strong>Name:</strong> {app.applicantName}</p>
             <p><strong>Email:</strong> {app.applicantEmail}</p>
 
-            {/* ✅ THIS PART WILL NOW UPDATE */}
+            {/* THIS PART WILL NOW UPDATE */}
             <p className="mt-2">
               <strong>Status:</strong>{" "}
               <span
