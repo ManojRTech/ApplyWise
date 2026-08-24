@@ -51,29 +51,32 @@ function ApplyJob() {
       setInsight(res.data);
       setLoading(false);
     } catch (err) {
-      console.error(err);
+        console.error("INSIGHTS ERROR:", err);
+        console.error("STATUS:", err.response?.status);
+        console.error("DATA:", err.response?.data);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto mt-16 bg-white p-8 rounded-xl shadow-lg">
-      <h2 className="text-2xl font-bold mb-6 text-center">
-        Apply for Job
+    <div className="w-full max-w-5xl mx-auto mt-12 mb-16 bg-white p-8 md:p-10 rounded-2xl shadow-lg">
+      <h2 className="text-2xl font-bold mb-6 text-left">
+        💼 Apply for Job
       </h2>
+      <div className="flex flex-col md:flex-row md:items-center gap-4 mb-5">
+        <input
+          type="file"
+          onChange={(e) => setFile(e.target.files[0])}
+          className="flex-1"
+        />
 
-      <input
-        type="file"
-        onChange={(e) => setFile(e.target.files[0])}
-        className="mb-4"
-      />
-
-      <button
-        onClick={fetchInsights}
-        disabled={loading}
-        className="w-full mb-4 bg-blue-600 text-white py-2 rounded-lg"
-      >
-        {loading ? "Analyzing..." : "📊 Analyze Resume & Get Insights"}
-      </button>
+        <button
+          onClick={fetchInsights}
+          disabled={loading}
+          className="w-full md:flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition"
+        >
+          {loading ? "Analyzing..." : "📊 Analyze Resume & Get Insights"}
+        </button>
+      </div>
 
       <div className="mb-6">
         <InsightBox data={insight} />
@@ -81,7 +84,7 @@ function ApplyJob() {
 
       <button
         onClick={handleApply}
-        className="w-full bg-indigo-600 text-white py-2 rounded-lg"
+        className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition font-semibold"
       >
         Submit Application
       </button>

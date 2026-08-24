@@ -20,8 +20,6 @@ public class ResumeParserService {
 
             String text = tika.parseToString(file.getInputStream());
 
-            System.out.println("EXTRACTED TEXT:\n" + text);
-
             return text;
 
         } catch (Exception e) {
