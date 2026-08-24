@@ -1,13 +1,13 @@
 # ApplyWise – Full Stack Recruitment Platform
-## ApplyWise is a full-stack recruitment platform that connects job seekers with employers. Employers can post jobs and manage applicants, while job seekers can explore opportunities, analyze their resumes, and apply intelligently. The project demonstrates a modern full-stack architecture with secure authentication, role-based access control, resume uploads, resume-job compatibility analysis, email notifications, and cloud deployment.
+## ApplyWise is a full-stack recruitment platform that connects job seekers with employers. Employers can post jobs, manage applicants, and evaluate candidates, while job seekers can discover opportunities, analyze their resumes, and apply intelligently. The platform provides secure JWT-based authentication, role-based access control, resume uploads, AI-powered resume and job description analysis, semantic skill matching using embeddings, application insights, and cloud deployment.
 ---
 
 ## 🚀 Live Demo
 
-**Frontend:**
-https://hireflow-1-62fu.onrender.com
+**Frontend:**  
+https://apply-wise-indol.vercel.app
 
-**Backend API:**
+**Backend API:**  
 https://hireflow-2sol.onrender.com
 
 ---
@@ -74,8 +74,9 @@ https://hireflow-2sol.onrender.com
 ### Deployment
 
 * Docker
-* Render (Backend & Database)
-* Render (Frontend)
+* Vercel – Frontend
+* Render – Backend
+* Neon – PostgreSQL Database
 
 ---
 
@@ -105,12 +106,14 @@ Job seekers can:
 
 ### Resume Analysis & Insights
 
-Analyze resume against job description before applying
-Skill match calculation based on required job skills
-Competition level based on number of applicants
-Employer responsiveness tracking
-Success probability estimation for informed decision-making
-
+* Analyze resume against job description before applying
+* AI-powered extraction of job requirements and candidate skills
+* Semantic skill matching using embeddings
+* Skill match score based on required job skills
+* Competition level based on number of applicants
+* Employer responsiveness tracking
+* Success probability estimation for informed decision-making
+  
 ### Job Applications
 
 Job seekers can:
@@ -125,14 +128,15 @@ Employers can:
 * View job applicants
 * Access uploaded resumes
 * Shortlist or reject candidates
-* Trigger email notifications on status updates
+* Provide optional assessment links
+* Send application status notifications via email
 
 ### Email Notifications
 
-* Automatic email updates sent to job seekers on application status changes
+* Email notifications for application status updates
 * Rejection emails with custom messages
 * Shortlisting emails with optional assessment links
-* Enhances communication between employers and candidates
+* Email delivery failures do not prevent application status updates
 
 ### File Upload
 
@@ -164,12 +168,14 @@ VITE_BACKEND_URL=<backend-base-url>
 
 ### Backend
 
-```
-SPRING_DATASOURCE_URL=<database-url>
-SPRING_DATASOURCE_USERNAME=<db-username>
-SPRING_DATASOURCE_PASSWORD=<db-password>
+```text
+DATABASE_URL=<database-url>
+DATABASE_USERNAME=<db-username>
+DATABASE_PASSWORD=<db-password>
 JWT_SECRET=<jwt-secret>
 PORT=<server-port>
+MAIL_USERNAME=<email-username>
+MAIL_PASSWORD=<email-app-password>
 ```
 
 ---
@@ -178,15 +184,15 @@ PORT=<server-port>
 
 ### Backend
 
-```
-cd HireFlow-backend
+```bash
+cd ApplyWise-backend
 ./mvnw spring-boot:run
 ```
 
 ### Frontend
 
-```
-cd HireFlow-frontend
+```bash
+cd ApplyWise-frontend
 npm install
 npm run dev
 ```
