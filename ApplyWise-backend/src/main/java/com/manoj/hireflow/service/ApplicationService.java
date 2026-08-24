@@ -1,5 +1,6 @@
 package com.manoj.hireflow.service;
 
+import com.manoj.hireflow.dto.AiExtractionResponse;
 import com.manoj.hireflow.dto.ApplicationResponse;
 import com.manoj.hireflow.dto.ApplicationSeekerResponse;
 import com.manoj.hireflow.dto.JobInsightDto;
@@ -26,7 +27,8 @@ public class ApplicationService {
     private final UserRepository userRepository;
     private final InsightService insightService;
     private final ResumeParserService resumeParserService;
-    private final SkillMatcherService skillMatcherService;
+    private final LlmExtractionService llmExtractionService;
+    private final EmbeddingService embeddingService;
     private final EmailService emailService;
 
     public ApplicationService(ApplicationRepository applicationRepository,
@@ -34,14 +36,16 @@ public class ApplicationService {
                               UserRepository userRepository,
                               InsightService insightService,
                               ResumeParserService resumeParserService,
-                              SkillMatcherService skillMatcherService,
+                              LlmExtractionService llmExtractionService,
+                              EmbeddingService embeddingService,
                               EmailService emailService) {
         this.applicationRepository = applicationRepository;
         this.jobRepository = jobRepository;
         this.userRepository = userRepository;
         this.insightService = insightService;
         this.resumeParserService = resumeParserService;
-        this.skillMatcherService = skillMatcherService;
+        this.llmExtractionService = llmExtractionService;
+        this.embeddingService = embeddingService;
         this.emailService = emailService;
     }
 
@@ -221,29 +225,94 @@ public class ApplicationService {
         return "Application cancelled successfully";
     }
 
-    public JobInsightDto generateInsightsFromResume(Long jobId, MultipartFile file) {
+    public JobInsightDto generateInsightsFromResume(
+                Long jobId,
+                MultipartFile file
+        ) {
 
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new RuntimeException("Job not found"));
 
-        // extract text directly from uploaded file (NOT from DB)
-        String resumeText = resumeParserService.extractTextFromFile(file);
+        // 1. Extract text from uploaded resume
+        String resumeText =
+                resumeParserService.extractTextFromFile(file);
 
-        double skillMatch = skillMatcherService.calculateSkillMatch(
-                resumeText,
-                job.getDescription()
-        );
+        if (resumeText == null || resumeText.isBlank()) {
+                throw new RuntimeException(
+                        "Could not extract text from resume"
+                );
+        }
 
-        System.out.println("RESUME TEXT:\n" + resumeText);
-        System.out.println("JOB DESC:\n" + job.getDescription());
+        String jobDescription = job.getDescription();
 
-        int applicantCount = applicationRepository.countByJob(job);
+        // 2. Gemini extracts:
+        //    - JD requirements
+        //    - candidate skills
+        //    - potential requirement ↔ candidate skill matches
+        AiExtractionResponse extraction =
+                llmExtractionService.extractSkills(
+                        jobDescription,
+                        resumeText
+                );
 
-        int total = applicationRepository.countByJob(job);
-        int responded = applicationRepository
-                .countByJobAndStatusNot(job, Application.ApplicationStatus.PENDING);
-        int employerResponse = (total == 0) ? 0 : (responded * 100 / total);
+        List<String> matchedSkills =
+                extraction.getPotentialMatches()
+                        .stream()
+                        .map(AiExtractionResponse.PotentialMatch::getJobRequirement)
+                        .distinct()
+                        .toList();
 
-        return insightService.calculateInsights(skillMatch, applicantCount, employerResponse);
-    }
+        List<String> missingSkills =
+                extraction.getJobRequirements()
+                        .stream()
+                        .filter(requirement ->
+                                !matchedSkills.contains(requirement)
+                        )
+                        .toList();
+
+        // 3. Calculate semantic skill compatibility
+        //
+        // IMPORTANT:
+        // We pass ALL JD requirements + only the
+        // potential matches identified by Gemini.
+        //
+        // Requirements without a potential match
+        // receive a score of 0.
+        double skillMatch =
+                embeddingService.calculateSemanticSkillMatch(
+                        extraction.getJobRequirements(),
+                        extraction.getPotentialMatches()
+                );
+
+        // 4. Existing ApplyWise insight calculations
+        int applicantCount =
+                applicationRepository.countByJob(job);
+
+        int total =
+                applicationRepository.countByJob(job);
+
+        int responded =
+                applicationRepository.countByJobAndStatusNot(
+                        job,
+                        Application.ApplicationStatus.PENDING
+                );
+
+        int employerResponse =
+                (total == 0)
+                        ? 0
+                        : (responded * 100 / total);
+
+        // 5. Return the existing insight response
+        JobInsightDto insight =
+                insightService.calculateInsights(
+                        skillMatch,
+                        applicantCount,
+                        employerResponse
+                );
+
+        insight.setMatchedSkills(matchedSkills);
+        insight.setMissingSkills(missingSkills);
+
+        return insight;
+        }
 }

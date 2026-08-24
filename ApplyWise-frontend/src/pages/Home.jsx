@@ -26,10 +26,8 @@ function Home() {
         <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition">
           <h3 className="text-xl font-semibold mb-2">🚀 Smart Job Posting</h3>
           <p className="text-gray-600">
-            <p className="text-gray-600">
               Post and manage job listings efficiently through a simple and intuitive dashboard,
               allowing employers to create job opportunities and monitor applications with ease.
-            </p>
           </p>
         </div>
 

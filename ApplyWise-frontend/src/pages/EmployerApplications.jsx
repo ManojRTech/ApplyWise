@@ -19,7 +19,6 @@ function EmployerApplications() {
   const fetchApplications = async () => {
     try {
       const res = await api.get(`/applications/job/${jobId}`);
-      console.log(res.data);
       setApplications(res.data);
     } catch (err) {
       console.error("Failed");

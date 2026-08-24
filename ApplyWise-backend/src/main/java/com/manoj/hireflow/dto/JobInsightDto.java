@@ -1,4 +1,5 @@
 package com.manoj.hireflow.dto;
+import java.util.List;
 
 public class JobInsightDto {
     private double skillCompatibility;
@@ -6,6 +7,8 @@ public class JobInsightDto {
     private double employerResponsiveness;
     private double successProbability;
     private int applicantCount;
+    private List<String> matchedSkills;
+    private List<String> missingSkills;
 
     // getters
     public double getSkillCompatibility() {
@@ -47,5 +50,21 @@ public class JobInsightDto {
 
     public void setApplicantCount(int applicantCount) {
         this.applicantCount = applicantCount;
+    }
+
+    public List<String> getMatchedSkills() {
+        return matchedSkills;
+    }
+
+    public void setMatchedSkills(List<String> matchedSkills) {
+        this.matchedSkills = matchedSkills;
+    }
+
+    public List<String> getMissingSkills() {
+        return missingSkills;
+    }
+
+    public void setMissingSkills(List<String> missingSkills) {
+        this.missingSkills = missingSkills;
     }
 }

@@ -1,10 +1,25 @@
+# Dependencies / build
 node_modules/
 dist/
-
 target/
+
+# Logs
 *.log
 
+# OS
 .DS_Store
 
+# IDE
 .idea/
 .vscode/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Local Spring Boot configuration
+application-local.properties
+
+# Uploaded files
+ApplyWise-backend/uploads/
