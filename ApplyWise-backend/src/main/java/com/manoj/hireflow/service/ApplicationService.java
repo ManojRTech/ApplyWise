@@ -179,7 +179,11 @@ public class ApplicationService {
                 + "Contact: " + employer.getEmail() + "\n"
                 + "Company: " + job.getCompany();
 
-        emailService.sendEmail(to, "Application Update", body);
+        try {
+                emailService.sendEmail(to, "Application Update", body);
+        } catch (Exception e) {
+                System.err.println("Email sending failed, skipping notification.");
+        }
     }
 
     public List<ApplicationSeekerResponse> getMyApplications(String email) {
