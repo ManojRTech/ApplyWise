@@ -17,7 +17,7 @@ const handleUpdate = async () => {
       assessmentLink: link
     });
 
-    alert("Status updated & email sent");
+    alert("Status updated successfully");
 
     // ✅ PASS MESSAGE BACK
     onClose(message);
