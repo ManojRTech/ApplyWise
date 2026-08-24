@@ -23,8 +23,15 @@ const handleUpdate = async () => {
     onClose(message);
 
   } catch (err) {
-    console.error(err);
-    alert("Failed to update status");
+    console.error("STATUS UPDATE ERROR:", err);
+    console.error("STATUS:", err.response?.status);
+    console.error("DATA:", err.response?.data);
+
+    alert(
+      err.response?.data?.message ||
+      err.response?.data ||
+      "Failed to update status"
+    );
   } finally {
     setLoading(false);
   }
